@@ -1,0 +1,42 @@
+version: "3.4"
+name: datadolphins_db
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: ${DEV_DOCKER_CONTAINER_NAME_PREFIX}_postgres_db
+    restart: always
+    volumes:
+      - ./app/database/setup:/docker-entrypoint-initdb.d
+      - postgres:/var/lib/postgresql/data
+    ports:
+      - ${POSTGRES_PORT}:5432
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+
+  dbgate:
+    image: dbgate/dbgate:alpine
+    container_name: ${DEV_DOCKER_CONTAINER_NAME_PREFIX}_dbgate
+    volumes:
+      - dbgate:/root/.dbgate
+    depends_on:
+      - db
+    ports:
+      - 8091:3000
+    environment:
+      # docs: https://dbgate.org/docs/env-variables.html
+      CONNECTIONS: 'CON1'
+      LABEL_CON1: 'datadolphins_applicatie'
+      SERVER_CON1: 'db'
+      USER_CON1: ${POSTGRES_USER}
+      PASSWORD_CON1: ${POSTGRES_PASSWORD}
+      PORT_CON1: 5432
+      ENGINE_CON1: postgres@dbgate-plugin-postgres
+
+volumes:
+  dbgate:
+    name: ${DEV_DOCKER_CONTAINER_NAME_PREFIX}_dbgate
+  postgres:
+    name: ${DEV_DOCKER_CONTAINER_NAME_PREFIX}_postgres

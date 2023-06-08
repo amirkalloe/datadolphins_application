@@ -1,0 +1,13 @@
+[run]
+branch=True
+source = app
+omit =
+    */__init__.py
+    **/deprecated/*.py
+[report]
+include_namespace_packages = True
+exclude_lines =
+    import
+    from
+    logger
+    logging
